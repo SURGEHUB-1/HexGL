@@ -10,7 +10,6 @@ bkcore.hexgl.tracks.RealWorld = {
    
     var terrainGeo = new THREE.PlaneGeometry(10000, 10000, 128, 128);
 
-    applyHeightmap(terrainGeo, 'textures/terrain/heightmap.png');
     terrainGeo.rotateX(-Math.PI / 2);
     var terrainMat = new THREE.MeshLambertMaterial({
       map: new THREE.TextureLoader().load('textures/terrain/grass.jpg')
