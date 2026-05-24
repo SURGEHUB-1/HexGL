@@ -86,13 +86,12 @@ bkcore.hexgl.tracks.RealWorld = {
   // ── BUILD SCENES ────────────────────────────────────────────────────────
   buildScenes: function(ctx, quality)
   {
-    // Dummy analyser — Gameplay.checkPoint() reads this every frame
     this.analyser = {
       pixels:   { width: 512, height: 512 },
       getPixel: function() { return { r: 0, g: 0, b: 0 }; }
     };
 
-    // ── SKYBOX (separate scene, same pattern as Cityscape) ───────────────
+    // ── SKYBOX ───────────────────────────────────────────────────────────
     var sceneCube  = new THREE.Scene();
     var cameraCube = new THREE.PerspectiveCamera(70, ctx.width / ctx.height, 1, 100000);
     sceneCube.add(cameraCube);
@@ -155,8 +154,8 @@ bkcore.hexgl.tracks.RealWorld = {
         scene.add(dash);
       }
     }
-    addRoad(10000, 0);            // N–S
-    addRoad(10000, Math.PI / 2);  // E–W
+    addRoad(10000, 0);
+    addRoad(10000, Math.PI / 2);
 
     // ── TREES ────────────────────────────────────────────────────────────
     var trunkMat = new THREE.MeshLambertMaterial({ color: 0x5c3a1e });
@@ -199,7 +198,7 @@ bkcore.hexgl.tracks.RealWorld = {
       });
     }
 
-    // ── ORIGINAL FEISAR SHIP ─────────────────────────────────────────────
+    // ── FEISAR SHIP ──────────────────────────────────────────────────────
     var ship = ctx.createMesh(scene,
       this.lib.get('geometries','ship.feisar'),
       this.spawn.x, this.spawn.y, this.spawn.z,
@@ -232,10 +231,40 @@ bkcore.hexgl.tracks.RealWorld = {
     ctx.components.shipControls = shipControls;
     ctx.tweakShipControls();
 
-    // ── CAMERA ───────────────────────────────────────────────────────────
-    ctx.components.cameraChase = new bkcore.hexgl.CameraChase(
-      ctx, camera, shipControls.dummy);
+    // ── CAMERA CHASE — correct signature ─────────────────────────────────
+    ctx.components.cameraChase = new bkcore.hexgl.CameraChase({
+      target      : ship,
+      camera      : camera,
+      cameraCube  : ctx.manager.get('sky').camera,  // keeps skybox aligned
+      lerp        : 0.5,
+      yoffset     : 8.0,
+      zoffset     : 10.0,
+      viewOffset  : 10.0
+    });
 
-    ctx.manager.add('game', scene, camera);
+    // ── GAME RENDER LOOP — 4th arg is required, runs every frame ──────────
+    ctx.manager.add('game', scene, camera, function(delta, renderer)
+    {
+      if (delta > 25 && this.objects.lowFPS < 1000) this.objects.lowFPS++;
+
+      var dt = delta / 16.6;
+
+      this.objects.components.shipControls.update(dt);
+      this.objects.components.cameraChase.update(dt,
+        this.objects.components.shipControls.getSpeedRatio());
+
+      this.objects.composers.game.render(dt);
+
+      if (this.objects.hud)
+        this.objects.hud.update(
+          this.objects.components.shipControls.speed,
+          this.objects.components.shipControls.shield
+        );
+    },
+    {
+      lowFPS     : 0,
+      components : ctx.components,
+      composers  : ctx.composers,
+      hud        : ctx.hud
+    });
   }
-};
