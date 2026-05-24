@@ -27,7 +27,7 @@ bkcore.hexgl.HexGL = function(opts)
 	this.difficulty = opts.difficulty == undefined ? 0 : opts.difficulty;
 	this.player = opts.player == undefined ? "Anonym" : opts.player;
 
-	this.track = bkcore.hexgl.tracks[ opts.track == undefined ? 'Cityscape' : opts.track ];
+	this.track = bkcore.hexgl.tracks[ opts.track == undefined ? 'RealWorld' : opts.track ];
 
 	this.mode = opts.mode == undefined ? 'timeattack' : opts.mode;
 
