@@ -17,7 +17,7 @@
       hud: hud === 1,
       controlType: controlType,
       godmode: godmode,
-      track: 'Cityscape'
+      track: 'RealWorld',
     });
     window.hexGL = hexGL;
     progressbar = $('progressbar');
